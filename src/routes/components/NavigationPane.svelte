@@ -9,6 +9,9 @@
         <p>Files</p>
         <Icon src={icons.menu} />
     </div>
+    <div class="home-routes">
+        
+    </div>
 </div>
 
 <style>
