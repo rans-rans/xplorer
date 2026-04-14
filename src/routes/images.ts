@@ -8,6 +8,7 @@ export const icons = {
     music: "/music.png",
     picture: "/picture.png",
     recent: "/recent.png",
+    search:"/search.png",
     star: "/star.png",
     trash: "/trash.png",
     video: "/video.png",

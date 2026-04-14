@@ -1,12 +1,23 @@
 <script lang="ts">
-    let { src, alt = "" }: { src: string; alt?: string } = $props();
+    let {
+        src,
+        alt = "",
+        height = 24,
+        width = 24,
+        active = false,
+    }: {
+        src: string;
+        alt?: string;
+        active?: boolean;
+        height?: number;
+        width?: number;
+    } = $props();
 </script>
 
-<img src={src} alt={alt} />
+<img {src} {alt} {width} {height} class:active />
 
 <style>
     img {
-        width: 24px;
-        height: 24px;
+        display: block;
     }
 </style>
