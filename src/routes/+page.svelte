@@ -1,4 +1,5 @@
 <script lang="ts">
+    import ContentPane from "./components/ContentPane.svelte";
     import NavigationPane from "./components/NavigationPane.svelte";
 </script>
 
@@ -7,7 +8,9 @@
         <div class="nav_pane">
             <NavigationPane />
         </div>
-        <div class="content_pane"></div>
+        <div class="content_pane">
+            <ContentPane />
+        </div>
     </div>
 </main>
 
@@ -17,6 +20,7 @@
         width: 100%;
         height: 100vh;
         height: 100dvh;
+        overflow: hidden;
     }
 
     .nav_pane {
@@ -26,7 +30,7 @@
         background-color: rgb(237, 240, 243);
         overflow-y: scroll;
     }
-    
+
     ::-webkit-scrollbar {
         background-color: rgb(237, 240, 243);
     }
@@ -35,5 +39,6 @@
         height: 100%;
         flex: 1;
         background-color: rgb(251, 251, 251);
+        overflow-y: scroll;
     }
 </style>

@@ -1,3 +1,8 @@
+:root {
+    --primary-blue: rgb(61, 168, 239);
+    --primary-grey: rgb(231, 231, 231);
+}
+
 * {
     margin: 0;
     padding: 0;
