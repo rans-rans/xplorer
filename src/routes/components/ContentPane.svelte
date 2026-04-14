@@ -1,7 +1,45 @@
 <script lang="ts">
-    import { icons } from "../images";
+    import { BaseDirectory, homeDir, join } from "@tauri-apps/api/path";
     import FileItem from "./FileItem.svelte";
-    import Icon from "./Icon.svelte";
+    import { readDir } from "@tauri-apps/plugin-fs";
+    import { onMount } from "svelte";
+
+    let currentPath = $state("");
+    let loadingDir = $state(false);
+    let entries: Array<RouteItem> = $state([]);
+
+    async function readHomeDir() {
+        loadingDir = true;
+        try {
+            currentPath = await homeDir();
+            const rawEntries = await readDir(currentPath, {
+                baseDir: BaseDirectory.Home,
+            });
+            entries = await Promise.all(
+                rawEntries.map(async (entry) => ({
+                    name: entry.name,
+                    isDir: entry.isDirectory,
+                    fullPath: await join(currentPath, entry.name),
+                    isHidden: entry.name.startsWith("."),
+                })),
+            );
+            entries = entries
+                .filter((entry) => !entry.isHidden)
+                .sort((a, b) => {
+                    if (a.isDir && !b.isDir) return -1;
+                    if (!a.isDir && b.isDir) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+        } catch (error) {
+            console.log(`Error loading files ${error}`);
+        } finally {
+            loadingDir = false;
+        }
+    }
+
+    onMount(() => {
+        readHomeDir();
+    });
 </script>
 
 <div class="wrapper">
@@ -9,8 +47,9 @@
         <input type="text" class="route_input" />
     </div>
     <div class="dir_contents">
-        <FileItem isDir={true} />
-        <FileItem isDir={false} />
+        {#each entries as entry}
+            <FileItem routeItem={entry} />
+        {/each}
     </div>
 </div>
 
@@ -30,7 +69,7 @@
         top: 0;
         z-index: 10;
         padding-bottom: 12px;
-        margin-bottom:24px;
+        margin-bottom: 24px;
     }
     .route_input {
         width: 55%;
