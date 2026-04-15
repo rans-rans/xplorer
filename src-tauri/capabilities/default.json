@@ -10,11 +10,38 @@
     "opener:default",
     "fs:default",
     "fs:allow-read-dir",
+    "fs:allow-watch",
+    "fs:allow-exists",
     {
       "identifier": "fs:allow-read-dir",
       "allow": [
         {
           "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-watch",
+      "allow": [
+        {
+          "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
         }
       ]
     }

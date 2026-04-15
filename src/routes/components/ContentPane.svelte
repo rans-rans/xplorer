@@ -1,55 +1,60 @@
 <script lang="ts">
-    import { BaseDirectory, homeDir, join } from "@tauri-apps/api/path";
+    import { homeDir } from "@tauri-apps/api/path";
     import FileItem from "./FileItem.svelte";
-    import { readDir } from "@tauri-apps/plugin-fs";
     import { onMount } from "svelte";
+    import { currentPath, currentPathEntries } from "../store";
+    import { checkPageChange } from "../file_folder_operations";
 
-    let currentPath = $state("");
-    let loadingDir = $state(false);
-    let entries: Array<RouteItem> = $state([]);
+    let currPath = $state("");
+    let currWorkingPath = $state("");
 
     async function readHomeDir() {
-        loadingDir = true;
-        try {
-            currentPath = await homeDir();
-            const rawEntries = await readDir(currentPath, {
-                baseDir: BaseDirectory.Home,
-            });
-            entries = await Promise.all(
-                rawEntries.map(async (entry) => ({
-                    name: entry.name,
-                    isDir: entry.isDirectory,
-                    fullPath: await join(currentPath, entry.name),
-                    isHidden: entry.name.startsWith("."),
-                })),
-            );
-            entries = entries
-                .filter((entry) => !entry.isHidden)
-                .sort((a, b) => {
-                    if (a.isDir && !b.isDir) return -1;
-                    if (!a.isDir && b.isDir) return 1;
-                    return a.name.localeCompare(b.name);
-                });
-        } catch (error) {
-            console.log(`Error loading files ${error}`);
-        } finally {
-            loadingDir = false;
-        }
+        const homePath = await homeDir();
+        currentPath.set(homePath);
+        currWorkingPath = homePath;
+    }
+
+    async function handleInputSubmit() {
+        await checkPageChange(currWorkingPath, currPath, (newPath) => {
+            currentPath.set(newPath);
+            currWorkingPath = newPath;
+        });
     }
 
     onMount(() => {
         readHomeDir();
+        const currSub = currentPath.subscribe((value) => {
+            currPath = value;
+        });
+        const entriesSub = currentPathEntries.subscribe((entries) => {
+            entries;
+        });
+        return () => {
+            entriesSub();
+            currSub();
+        };
     });
 </script>
 
 <div class="wrapper">
-    <div class="route_input_wrapper">
-        <input type="text" class="route_input" />
-    </div>
+    <form
+        class="route_input_wrapper"
+        onsubmit={(e) => {
+            e.preventDefault();
+            handleInputSubmit();
+        }}
+    >
+        <input type="text" class="route_input" bind:value={currPath} />
+    </form>
+
     <div class="dir_contents">
-        {#each entries as entry}
-            <FileItem routeItem={entry} />
-        {/each}
+        {#await $currentPathEntries}
+            <p>Loading items</p>
+        {:then entries}
+            {#each entries as entry}
+                <FileItem routeItem={entry} />
+            {/each}
+        {/await}
     </div>
 </div>
 
@@ -62,8 +67,8 @@
         box-sizing: border-box;
     }
     .route_input_wrapper {
-        width: 100%;
         display: flex;
+        width: 100%;
         justify-content: center;
         position: sticky;
         top: 0;
@@ -72,13 +77,12 @@
         margin-bottom: 24px;
     }
     .route_input {
-        width: 55%;
-        padding-block: 4px;
         padding-inline: 8px;
         height: 36px;
         background-color: rgb(236, 236, 236);
         border: none;
         border-radius: 12px;
+        width: 55%;
     }
     .dir_contents {
         display: grid;

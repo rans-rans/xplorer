@@ -1,11 +1,26 @@
 <script lang="ts">
+    import { join } from "@tauri-apps/api/path";
     import { icons } from "../images";
+    import { currentPath } from "../store";
     import Icon from "./Icon.svelte";
 
     let { routeItem }: { routeItem: RouteItem } = $props();
+
+    async function handleDoubleClick() {
+        if (routeItem.isDir === false) return;
+        const newPath = await join($currentPath, routeItem.name);
+        currentPath.set(newPath);
+    }
 </script>
 
-<div class="wrapper">
+<div
+    class="wrapper"
+    ondblclick={handleDoubleClick}
+    role="button"
+    tabindex="0"
+    aria-label={`Open ${routeItem.name}`}
+    aria-disabled={!routeItem.isDir}
+>
     <div class="icon_slot">
         {#if routeItem.isDir}
             <Icon src={icons.folder} height={62} width={62} />
@@ -19,7 +34,6 @@
 <style>
     .wrapper {
         width: 100%;
-        /* background: green; */
         padding: 8px;
         border-radius: 12px;
         overflow: hidden;

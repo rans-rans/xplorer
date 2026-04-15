@@ -1,8 +1,37 @@
 <script lang="ts">
     import ContentPane from "./components/ContentPane.svelte";
     import NavigationPane from "./components/NavigationPane.svelte";
+    import { currentPath } from "./store";
+    import { get } from "svelte/store";
+    import { checkPageChange } from "./file_folder_operations";
+
+    function isEditableTarget(target: EventTarget | null) {
+        if (!(target instanceof HTMLElement)) {
+            return false;
+        }
+        const tagName = target.tagName;
+        if (tagName === "INPUT" || tagName === "TEXTAREA") {
+            return true;
+        }
+        return target.isContentEditable;
+    }
+
+    async function handleBackspacePress() {
+        const currentPathValue = get(currentPath);
+        const newPath = currentPathValue.split("/").slice(0, -1).join("/");
+        checkPageChange(currentPathValue, newPath, (updatedPath) => {
+            currentPath.set(updatedPath);
+        });
+    }
 </script>
 
+<svelte:body
+    on:keydown={(e) => {
+        if (e.key === "Backspace" && !isEditableTarget(e.target)) {
+            handleBackspacePress();
+        }
+    }}
+/>
 <main>
     <div class="window_wrapper">
         <div class="nav_pane">

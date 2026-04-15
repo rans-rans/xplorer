@@ -15,13 +15,15 @@
     });
 </script>
 
-<div class:item-active={isActive} class="item">
+<div class:item-active={isActive} class="item non_select">
     <Icon src={icon} height={16} width={16} active={true} />
-    <p style="font-weight: bold;font-size:12px;">{name}</p>
+    <p>{name}</p>
 </div>
 
 <style>
     .item {
+        font-weight: bold;
+        font-size: 12px;
         display: flex;
         gap: 0.9rem;
         align-items: center;
@@ -31,7 +33,7 @@
     }
 
     .item-active {
-        color:white;
+        color: white;
         background-image: linear-gradient(
             90deg,
             rgb(61, 168, 239),
