@@ -1,38 +1,79 @@
 <script lang="ts">
     import { homeDir } from "@tauri-apps/api/path";
     import FileItem from "./FileItem.svelte";
-    import { onMount } from "svelte";
-    import { currentPath, currentPathEntries } from "../store";
+    import { onDestroy, onMount } from "svelte";
+    import {
+        currentPath,
+        currentPathEntries,
+        refreshCurrentPathEntries,
+    } from "../store";
     import { checkPageChange } from "../file_folder_operations";
+    import { watch, type UnwatchFn } from "@tauri-apps/plugin-fs";
 
-    let currPath = $state("");
-    let currWorkingPath = $state("");
+    // this store the value of the input field, corresponding to the current path
+    let currentPathInput = $state("");
+    /// this variable is used as a fallback in case the path change is invalid
+    /// so we can reset the input field to the last valid path
+    let currentWorkingPath = $state("");
+
+    let fsWatcher: UnwatchFn | null = null;
 
     async function readHomeDir() {
         const homePath = await homeDir();
         currentPath.set(homePath);
-        currWorkingPath = homePath;
+        currentWorkingPath = homePath;
     }
 
+    // this function is called when the user press enter in the input field
     async function handleInputSubmit() {
-        await checkPageChange(currWorkingPath, currPath, (newPath) => {
-            currentPath.set(newPath);
-            currWorkingPath = newPath;
-        });
+        await checkPageChange(
+            currentWorkingPath,
+            currentPathInput,
+            (newPath) => {
+                currentPath.set(newPath);
+                currentWorkingPath = newPath;
+                currentPathInput = newPath;
+            },
+        );
+    }
+    async function stopWatchingCurrentFolder() {
+        if (fsWatcher) {
+            fsWatcher();
+        }
+        fsWatcher = null;
+    }
+
+    async function listenToCurrentFolder(newPath: string) {
+        await stopWatchingCurrentFolder();
+
+        if (!newPath) {
+            return;
+        }
+
+        fsWatcher = await watch(
+            newPath,
+            async () => await refreshCurrentPathEntries(),
+            {
+                delayMs: 500,
+            },
+        );
     }
 
     onMount(() => {
         readHomeDir();
-        const currSub = currentPath.subscribe((value) => {
-            currPath = value;
+        // Register a listener to listen to the change in the current path
+        const currPathSubscription = currentPath.subscribe((value) => {
+            if (value == currentPathInput) return;
+            currentPathInput = value;
+            // when the path change, we need to listen to the new folder
+            listenToCurrentFolder(value);
         });
-        const entriesSub = currentPathEntries.subscribe((entries) => {
-            entries;
-        });
-        return () => {
-            entriesSub();
-            currSub();
-        };
+
+        return () => currPathSubscription();
+    });
+
+    onDestroy(() => {
+        void stopWatchingCurrentFolder();
     });
 </script>
 
@@ -44,7 +85,7 @@
             handleInputSubmit();
         }}
     >
-        <input type="text" class="route_input" bind:value={currPath} />
+        <input type="text" class="route_input" bind:value={currentPathInput} />
     </form>
 
     <div class="dir_contents">
