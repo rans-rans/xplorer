@@ -1,5 +1,8 @@
 import { join } from "@tauri-apps/api/path";
 import { exists, readDir, watch } from "@tauri-apps/plugin-fs";
+import { get } from "svelte/store";
+import { currentPath } from "./store";
+import { invoke } from "@tauri-apps/api/core";
 
 async function readFolderItems(currentPath: string): Promise<RouteItem[]> {
     try {
@@ -44,4 +47,36 @@ async function checkPageChange(
     }
 }
 
-export { checkPageChange, readFolderItems };
+function navigateUp() {
+    const currentPathValue = get(currentPath);
+    const newPath = currentPathValue.split("/").slice(0, -1).join("/");
+    checkPageChange(currentPathValue, newPath, (updatedPath) => {
+        currentPath.set(updatedPath);
+    });
+}
+
+async function searchForFileFolder(
+    query: string,
+    root: string,
+): Promise<RouteItem[]> {
+    try {
+        const results = await invoke("search_files", { query, root }) as any[];
+        const fileItems = results.map((item: any) => {
+            return ({
+                name: item.name as string,
+                isDir: item.is_dir as boolean,
+                fullPath: item.full_path as string,
+                isHidden: false,
+            });
+        });
+        return fileItems;
+    } catch (error) {
+        console.error(
+            `Error searching for files/folders with name ${query}:`,
+            error,
+        );
+        return [];
+    }
+}
+
+export { checkPageChange, navigateUp, readFolderItems, searchForFileFolder };

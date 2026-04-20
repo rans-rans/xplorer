@@ -11,6 +11,8 @@ export const icons = {
     picture: "/picture.png",
     recent: "/recent.png",
     search: "/search.png",
+    back:"/back.png",
+    forward:"/forward.png",
     star: "/star.png",
     trash: "/trash.png",
     video: "/video.png",

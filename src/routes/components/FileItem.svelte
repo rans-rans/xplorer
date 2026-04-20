@@ -1,21 +1,17 @@
 <script lang="ts">
-    import { join } from "@tauri-apps/api/path";
     import { icons } from "../images";
     import { currentPath } from "../store";
     import Icon from "./Icon.svelte";
 
-    let { routeItem }: { routeItem: RouteItem } = $props();
-
-    async function handleDoubleClick() {
-        if (routeItem.isDir === false) return;
-        const newPath = await join($currentPath, routeItem.name);
-        currentPath.set(newPath);
-    }
+    let {
+        routeItem,
+        onDoubleClick,
+    }: { routeItem: RouteItem; onDoubleClick?: () => void } = $props();
 </script>
 
 <div
     class="wrapper"
-    ondblclick={handleDoubleClick}
+    ondblclick={onDoubleClick}
     role="button"
     tabindex="0"
     aria-label={`Open ${routeItem.name}`}

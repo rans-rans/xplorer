@@ -9,14 +9,11 @@
     } from "@tauri-apps/api/path";
     import { icons } from "../images";
     import HomeRouteItem from "./HomeRouteItem.svelte";
-    import Icon from "./Icon.svelte";
-</script>
+    </script>
 
 <div style="padding: 0.1rem" class="nav_inner">
     <div class="top-header">
-        <Icon src={icons.search} height={16} width={16} />
         <p style="font-weight: bold;font-size: 14px;">Files</p>
-        <Icon src={icons.menu} height={16} width={16} />
     </div>
     <div class="scroll-area">
         <div class="home-routes">
