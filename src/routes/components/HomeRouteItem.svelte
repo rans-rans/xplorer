@@ -1,21 +1,42 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import Icon from "./Icon.svelte";
+    import { currentPath } from "../store";
 
     let {
         name,
         icon,
-        selected = false,
-    }: { name: string; icon: string; selected?: boolean } = $props();
+        onPathSet,
+    }: {
+        name: string;
+        icon: string;
+        onPathSet: () => Promise<string>;
+    } = $props();
 
     let isActive = $state(false);
+    let path = $state("");
 
     onMount(() => {
-        isActive = selected;
+        onPathSet().then((newPath) => {
+            path = newPath;
+        });
+        const currentPathSubscription = currentPath.subscribe((value) => {
+            if (value === "" ) return;
+            isActive = value.trim() === path.trim();
+        });
+
+        return () => currentPathSubscription();
     });
+
+    async function handleClick() {
+        if (isActive || path === "") return;
+        currentPath.set(path);
+    }
 </script>
 
-<div class:item-active={isActive} class="item non_select">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div onclick={handleClick} class:item-active={isActive} class="item non_select">
     <Icon src={icon} height={16} width={16} active={true} />
     <p>{name}</p>
 </div>

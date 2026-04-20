@@ -1,4 +1,12 @@
 <script lang="ts">
+    import {
+        audioDir,
+        documentDir,
+        downloadDir,
+        homeDir,
+        pictureDir,
+        videoDir,
+    } from "@tauri-apps/api/path";
     import { icons } from "../images";
     import HomeRouteItem from "./HomeRouteItem.svelte";
     import Icon from "./Icon.svelte";
@@ -12,21 +20,55 @@
     </div>
     <div class="scroll-area">
         <div class="home-routes">
-            <HomeRouteItem name="Recent" icon={icons.recent} />
-            <HomeRouteItem name="Starred" icon={icons.star} />
-            <HomeRouteItem name="Home" icon={icons.home} />
-            <HomeRouteItem name="Documents" icon={icons.document} />
+            <HomeRouteItem
+                name="Home"
+                icon={icons.home}
+                onPathSet={async () => {
+                    const homePath = await homeDir();
+                    return homePath;
+                }}
+            />
+            <HomeRouteItem
+                name="Documents"
+                onPathSet={async () => {
+                    const homePath = await documentDir();
+                    return homePath;
+                }}
+                icon={icons.document}
+            />
             <HomeRouteItem
                 name="Downloads"
-                selected={true}
                 icon={icons.download}
+                onPathSet={async () => {
+                    const homePath = await downloadDir();
+                    return homePath;
+                }}
             />
-            <HomeRouteItem name="Music" icon={icons.music} />
-            <HomeRouteItem name="Pictures" icon={icons.picture} />
-            <HomeRouteItem name="Videos" icon={icons.video} />
+            <HomeRouteItem
+                name="Music"
+                icon={icons.music}
+                onPathSet={async () => {
+                    const homePath = await audioDir();
+                    return homePath;
+                }}
+            />
+            <HomeRouteItem
+                name="Pictures"
+                icon={icons.picture}
+                onPathSet={async () => {
+                    const homePath = await pictureDir();
+                    return homePath;
+                }}
+            />
+            <HomeRouteItem
+                name="Videos"
+                icon={icons.video}
+                onPathSet={async () => {
+                    const homePath = await videoDir();
+                    return homePath;
+                }}
+            />
             <hr />
-            <HomeRouteItem name="Primary" icon={icons.disk} />
-            <HomeRouteItem name="IPhone" icon={icons.disk} />
         </div>
     </div>
 </div>
