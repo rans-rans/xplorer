@@ -1,17 +1,57 @@
 <script lang="ts">
+    import { Menu } from "@tauri-apps/api/menu";
     import { icons } from "../images";
-    import { currentPath } from "../store";
     import Icon from "./Icon.svelte";
+    import { PhysicalPosition } from "@tauri-apps/api/dpi";
 
     let {
         routeItem,
         onDoubleClick,
     }: { routeItem: RouteItem; onDoubleClick?: () => void } = $props();
+
+    async function showRightClickMenu(event: MouseEvent) {
+        event.preventDefault();
+
+        const menu = await Menu.new({
+            id: Date.now().toString(),
+            items: [
+                {
+                    id: "open",
+                    text: "Open",
+                    action: () => {
+                        if (routeItem.isDir) {
+                            onDoubleClick?.();
+                        } else {
+                            //
+                        }
+                    },
+                },
+                {
+                    id: "rename",
+                    text: "Rename",
+                    action: () => {},
+                },
+                {
+                    id: "props",
+                    text: "Properties",
+                    action: () => {},
+                },
+                {
+                    id: "delete",
+                    text: "Delete",
+                    action: () => {},
+                },
+            ],
+        });
+
+        menu.popup(new PhysicalPosition(event.screenX, event.screenY));
+    }
 </script>
 
 <div
     class="wrapper"
     ondblclick={onDoubleClick}
+    oncontextmenu={showRightClickMenu}
     role="button"
     tabindex="0"
     aria-label={`Open ${routeItem.name}`}
