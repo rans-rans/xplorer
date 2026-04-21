@@ -1,8 +1,17 @@
 import { join } from "@tauri-apps/api/path";
-import { exists, readDir, watch } from "@tauri-apps/plugin-fs";
+import { exists, readDir, remove, rename, stat } from "@tauri-apps/plugin-fs";
 import { get } from "svelte/store";
 import { currentPath } from "./store";
 import { invoke } from "@tauri-apps/api/core";
+
+export type FileStats = {
+    name: string;
+    fullPath: string;
+    isDir: boolean;
+    size: number;
+    modified: Date | null;
+    created: Date | null;
+};
 
 async function readFolderItems(currentPath: string): Promise<RouteItem[]> {
     try {
@@ -79,4 +88,36 @@ async function searchForFileFolder(
     }
 }
 
-export { checkPageChange, navigateUp, readFolderItems, searchForFileFolder };
+async function renameItem(oldPath: string, newPath: string): Promise<void> {
+    await rename(oldPath, newPath);
+}
+
+async function deleteItem(path: string, isDir: boolean): Promise<void> {
+    await remove(path, { recursive: isDir });
+}
+
+async function getFileStats(
+    path: string,
+    name: string,
+    isDir: boolean,
+): Promise<FileStats> {
+    const info = await stat(path);
+    return {
+        name,
+        fullPath: path,
+        isDir,
+        size: info.size ?? 0,
+        modified: info.mtime ? new Date(info.mtime) : null,
+        created: info.birthtime ? new Date(info.birthtime) : null,
+    };
+}
+
+export {
+    checkPageChange,
+    deleteItem,
+    getFileStats,
+    navigateUp,
+    readFolderItems,
+    renameItem,
+    searchForFileFolder,
+};

@@ -1,13 +1,19 @@
 <script lang="ts">
     import { Menu } from "@tauri-apps/api/menu";
+    import { PhysicalPosition } from "@tauri-apps/api/dpi";
+    import { openPath } from "@tauri-apps/plugin-opener";
+    import { currentPath } from "../store";
     import { icons } from "../images";
     import Icon from "./Icon.svelte";
-    import { PhysicalPosition } from "@tauri-apps/api/dpi";
+    import RenameDialog from "./RenameDialog.svelte";
+    import PropertiesDialog from "./PropertiesDialog.svelte";
+    import DeleteDialog from "./DeleteDialog.svelte";
 
-    let {
-        routeItem,
-        onDoubleClick,
-    }: { routeItem: RouteItem; onDoubleClick?: () => void } = $props();
+    let { routeItem }: { routeItem: RouteItem } = $props();
+
+    let showRename = $state(false);
+    let showProperties = $state(false);
+    let showDelete = $state(false);
 
     async function showRightClickMenu(event: MouseEvent) {
         event.preventDefault();
@@ -15,36 +21,22 @@
         const menu = await Menu.new({
             id: Date.now().toString(),
             items: [
-                {
-                    id: "open",
-                    text: "Open",
-                    action: () => {
-                        if (routeItem.isDir) {
-                            onDoubleClick?.();
-                        } else {
-                            //
-                        }
-                    },
-                },
-                {
-                    id: "rename",
-                    text: "Rename",
-                    action: () => {},
-                },
-                {
-                    id: "props",
-                    text: "Properties",
-                    action: () => {},
-                },
-                {
-                    id: "delete",
-                    text: "Delete",
-                    action: () => {},
-                },
+                { id: "open", text: "Open", action: () => onDoubleClick() },
+                { id: "rename", text: "Rename", action: () => { showRename = true; } },
+                { id: "props", text: "Properties", action: () => { showProperties = true; } },
+                { id: "delete", text: "Delete", action: () => { showDelete = true; } },
             ],
         });
 
         menu.popup(new PhysicalPosition(event.screenX, event.screenY));
+    }
+
+    function onDoubleClick() {
+        if (routeItem.isDir) {
+            currentPath.set(routeItem.fullPath);
+        } else {
+            openPath(routeItem.fullPath);
+        }
     }
 </script>
 
@@ -66,6 +58,10 @@
     </div>
     <p class="item_name">{routeItem.name}</p>
 </div>
+
+<RenameDialog open={showRename} {routeItem} onclose={() => (showRename = false)} />
+<PropertiesDialog open={showProperties} {routeItem} onclose={() => (showProperties = false)} />
+<DeleteDialog open={showDelete} {routeItem} onclose={() => (showDelete = false)} />
 
 <style>
     .wrapper {

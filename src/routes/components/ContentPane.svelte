@@ -90,7 +90,9 @@
             const results = await searchForFileFolder(query, rootPath);
             const stateAfter = get(searchMode);
             if (activeRequestId === stateAfter.searchRequestId) {
-                searchMode.setSearchResults(results.filter((item) => !item.isHidden));
+                searchMode.setSearchResults(
+                    results.filter((item) => !item.isHidden),
+                );
             }
         } finally {
             const stateFinal = get(searchMode);
@@ -143,11 +145,6 @@
         }
         void stopWatchingCurrentFolder();
     });
-
-    function onItemDoubleClick(entry: RouteItem) {
-        if (entry.isDir === false) return;
-        currentPath.set(entry.fullPath);
-    }
 </script>
 
 <div class="wrapper">
@@ -206,10 +203,7 @@
                 <p>No matching files or folders found.</p>
             {:else}
                 {#each $searchMode.searchResults.slice(0, $searchMode.maxRenderedResults) as entry (entry.fullPath)}
-                    <FileItem
-                        routeItem={entry}
-                        onDoubleClick={() => onItemDoubleClick(entry)}
-                    />
+                    <FileItem routeItem={entry} />
                 {/each}
                 {#if $searchMode.searchResults.length > $searchMode.maxRenderedResults}
                     <p>
@@ -225,10 +219,7 @@
                 <p>Loading items</p>
             {:then entries}
                 {#each entries as entry}
-                    <FileItem
-                        routeItem={entry}
-                        onDoubleClick={() => onItemDoubleClick(entry)}
-                    />
+                    <FileItem routeItem={entry} />
                 {/each}
             {/await}
         </div>
